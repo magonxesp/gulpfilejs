@@ -1,11 +1,13 @@
 const path = require('path');
 const { src, dest, task, watch, run } = require('gulp');
-const babel = require('gulp-babel');
+const babel = require('rollup-plugin-babel');
 const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
-const rollup = require('gulp-rollup');
+const rollup = require('rollup-stream');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
 
 let build_paths = {
     src: {
@@ -22,7 +24,7 @@ let build_paths = {
 };
 
 function buildcss() {
-    return src(build_paths.src_scss)
+    return src(build_paths.src.css)
         .pipe(sourcemaps.init())
         .pipe(plumber());
 }
@@ -30,22 +32,18 @@ function buildcss() {
 function buildjs() {
     // This will grab any file within src/ or its
     // subdirectories, then ...
-    return src(build_paths.src.js.source)
-        .pipe(sourcemaps.init())
-        .pipe(rollup({
+    return rollup({
             input: build_paths.src.js.entry_points,
-            output: {
-                file: 'bundle.js',
-                format: 'cjs'
-            }
-        }))
-        // Stop the process if an error is thrown.
+            format: 'umd',
+            plugins: [
+                babel(),
+            ]
+        })
+        .pipe(source(build_paths.src.js.entry_points))
+        .pipe(buffer())
         .pipe(plumber())
-        // Transpile the JS code using Babel's preset-env.
-        .pipe(babel())
-        // Generate sourcemaps
+        .pipe(sourcemaps.init())
         .pipe(sourcemaps.write('.'))
-        // Save each component as a separate file in dist.
         .pipe(dest(build_paths.dist.js));
 }
 
