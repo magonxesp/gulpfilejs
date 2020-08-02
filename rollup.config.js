@@ -10,3 +10,8 @@ module.exports = {
         babel({ babelHelpers: 'bundled' })
     ]
 };
+
+// No usar esto
+// mejor gulp + webpack + babel
+// https://www.npmjs.com/package/webpack-stream
+// https://medium.com/@renzocastro/webpack-babel-transpilando-tu-js-502244a61f5b
