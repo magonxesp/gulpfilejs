@@ -1,9 +1,9 @@
 {
   "name": "@magonxesp/gulpfilejs",
-  "description": "",
-  "author": "",
+  "description": "Compile javascript ES6 and SASS using Gulp",
+  "author": "magonxesp",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.13",
   "main": "./index.js",
   "scripts": {
     "postinstall": "node postinstall.js"
@@ -13,8 +13,7 @@
     "url": "https://github.com/MagonxESP/gulpfilejs"
   },
   "homepage": "https://github.com/MagonxESP/gulpfilejs",
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.10.4",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-private-methods": "^7.10.4",
@@ -27,7 +26,9 @@
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-plumber": "^1.2.1",
+    "gulp-rollup": "^2.17.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.2"
-  }
+  },
+  "devDependencies": {}
 }

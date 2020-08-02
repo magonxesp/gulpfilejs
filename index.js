@@ -5,15 +5,24 @@ const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
+const rollup = require('gulp-rollup');
 
-let buils_paths = {
-    src_js: '',
-    src_scss: '',
-    dist: './dist'
+let build_paths = {
+    src: {
+        js: {
+            source: '',
+            entry_points: []
+        },
+        css: ''
+    },
+    dist: {
+        js: '',
+        css: ''
+    }
 };
 
 function buildcss() {
-    return src(buils_paths.src_scss)
+    return src(build_paths.src_scss)
         .pipe(sourcemaps.init())
         .pipe(plumber());
 }
@@ -21,24 +30,29 @@ function buildcss() {
 function buildjs() {
     // This will grab any file within src/ or its
     // subdirectories, then ...
-    return src(buils_paths.src_js)
+    return src(build_paths.src.js.source)
         .pipe(sourcemaps.init())
+        .pipe(rollup({
+            input: build_paths.src.js.entry_points,
+            output: {
+                file: 'bundle.js',
+                format: 'cjs'
+            }
+        }))
         // Stop the process if an error is thrown.
         .pipe(plumber())
         // Transpile the JS code using Babel's preset-env.
         .pipe(babel())
-        // bundle in one file
-        .pipe(concat('bundle.js'))
         // Generate sourcemaps
         .pipe(sourcemaps.write('.'))
         // Save each component as a separate file in dist.
-        .pipe(dest(buils_paths.dist));
+        .pipe(dest(build_paths.dist.js));
 }
 
 function uglifyjs() {
-    return src(path.join(buils_paths.dist, 'build.js'))
+    return src(path.join(build_paths.dist.js, 'build.js'))
         .pipe(uglify())
-        .pipe(dest(buils_paths.dist));
+        .pipe(dest(build_paths.dist.js));
 
 }
 
@@ -48,26 +62,44 @@ function build() {
 }
 
 function buildWatch() {
-    return watch([buils_paths.src_js, buils_paths.src_scss], build);
+    return watch([build_paths.src.js, build_paths.src.js], build);
 }
 
 /**
- * @param paths
+ * @param {{
+ *      src: {
+ *          js: {
+ *              source: string,
+ *              entry_points: string|string[]
+ *          },
+ *          css: string
+ *      },
+ *      dist: {
+ *          js: string,
+ *          css: string
+ *     }
+ *  }} paths
  * @example
- *  const gulpfile = require("@magonxesp/gulpfilejs");
- *
- *  gulpfile({
- *      src_js: '/path/to/js',
- *      src_scss: '/path/to/scss',
- *      dist: './dist'
+ *  require("@magonxesp/gulpfilejs") ({
+ *      src: {
+ *          js: {
+ *              source: '/path/to/js',
+ *              entry_points: '/path/to/main.js'
+ *          },
+ *          css: '/path/to/css'
+ *      },
+ *      dist: {
+ *          js: './dist/js',
+ *          css: './dist/css'
+ *      }
  *  });
  */
 function buildTasks(paths) {
-    buils_paths = paths;
+    build_paths = paths;
 
     task('default', build);
-    task('build-js', buildjs);
-    task('build-css', buildcss);
+    task('buildjs', buildjs);
+    task('buildcss', buildcss);
     task('watch', buildWatch);
 }
 
