@@ -12,11 +12,17 @@ Compile javascript ES6 and SASS using Gulp
     ```
 * gulpfile.js   
     ```javascript
-    const gulpfile = require("@magonxesp/gulpfilejs");
-    
-    gulpfile({
-        src_js: '/path/to/js',
-        src_scss: '/path/to/scss',
-        dist: './dist'
-    });
+    require("@magonxesp/gulpfilejs") ({
+        src: {
+            js: {
+                source: '/path/to/js',
+                entry_points: '/path/to/main.js'
+            },
+            css: '/path/to/css'
+        },
+        dist: {
+            js: './dist/js',
+            css: './dist/css'
+        }
+     });
     ```
