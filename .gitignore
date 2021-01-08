@@ -275,4 +275,14 @@ modules.xml
 # Sonarlint plugin
 .idea/sonarlint
 
+/*
+!/.babelrc
+!/.gitignore
+!/index.js
+!/package.json
+!/package-lock.json
+!/postinstall.js
+!/webpack.config.js
+!/README.md
+
 # End of https://www.toptal.com/developers/gitignore/api/phpstorm+all

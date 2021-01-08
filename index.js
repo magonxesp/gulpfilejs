@@ -1,104 +1,156 @@
 const path = require('path');
-const { src, dest, task, watch, run } = require('gulp');
-const babel = require('rollup-plugin-babel');
+const gulp = require('gulp');
 const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
-const concat = require('gulp-concat');
-const uglify = require('gulp-uglify');
-const rollup = require('rollup-stream');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
+const webpack = require('webpack');
 
 let build_paths = {
-    src: {
-        js: {
-            source: '',
-            entry_points: []
+    js: {
+        webpack_config_path: undefined,
+        src: 'index.js',
+        dist: {
+            dirname: 'dist/js',
+            filename: 'bundle.js',
         },
-        css: ''
+        mode: 'development'
     },
-    dist: {
-        js: '',
-        css: ''
+    scss: {
+        src: './scss/style.scss',
+        dist: './dist/css/style.css',
     }
 };
 
-function buildcss() {
-    return src(build_paths.src.css)
+let available_tasks = [];
+
+function scss() {
+    return gulp.src(build_paths.scss.src)
         .pipe(sourcemaps.init())
         .pipe(plumber());
 }
 
-function buildjs() {
-    // This will grab any file within src/ or its
-    // subdirectories, then ...
-    return rollup({
-            input: build_paths.src.js.entry_points,
-            format: 'umd',
-            plugins: [
-                babel(),
+function defaultWebpackConfig() {
+    return {
+        mode: build_paths.js.mode,
+        entry: path.resolve(__dirname, build_paths.js.src),
+        output: {
+            path: path.resolve(__dirname, build_paths.js.dist.dirname),
+            filename: build_paths.js.dist.filename
+        },
+        devtool: 'source-map',
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    use: ['babel-loader']
+                },
+                {
+                    test: /\.js$/,
+                    use: ['source-map-loader'],
+                    enforce: 'pre'
+                },
             ]
-        })
-        .pipe(source(build_paths.src.js.entry_points))
-        .pipe(buffer())
-        .pipe(plumber())
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest(build_paths.dist.js));
+        }
+    };
 }
 
-function uglifyjs() {
-    return src(path.join(build_paths.dist.js, 'build.js'))
-        .pipe(uglify())
-        .pipe(dest(build_paths.dist.js));
+function compileWebpackJs() {
+    let config = {};
 
+    if (typeof build_paths.js.webpack_config_path !== 'undefined') {
+        config = require(build_paths.js.webpack_config_path);
+    } else {
+        config = defaultWebpackConfig();
+    }
+
+    return new Promise(((resolve, reject) => {
+        webpack(config, (error, status) => {
+            if (error) {
+                reject(error);
+            }
+
+            if (status.hasErrors()) {
+                reject(status);
+            }
+
+            resolve();
+        });
+    }));
 }
 
-function build() {
-    run('build-js');
-    run('build-css');
+function js() {
+    return compileWebpackJs();
 }
 
 function buildWatch() {
-    return watch([build_paths.src.js, build_paths.src.js], build);
+    let srcPaths = [];
+
+    for (let type in build_paths) {
+        if (typeof build_paths[type].src !== 'undefined') {
+            srcPaths.push(path.join(path.resolve(path.dirname(build_paths[type].src))));
+        }
+    }
+
+    gulp.watch(srcPaths, { events: 'all' }, gulp.series(...available_tasks));
 }
 
 /**
  * @param {{
- *      src: {
- *          js: {
- *              source: string,
- *              entry_points: string|string[]
+ *     js: {
+ *          webpack_config_path: string,
+ *          src: string,
+ *          dist: {
+ *              dirname: string
+ *              filename: string
  *          },
- *          css: string
- *      },
- *      dist: {
- *          js: string,
- *          css: string
+ *          mode: ('development' | 'dev' | 'prod' | 'production')
+ *     },
+ *     scss: {
+ *         src: string,
+ *         dist: string
  *     }
  *  }} paths
  * @example
  *  require("@magonxesp/gulpfilejs") ({
- *      src: {
- *          js: {
- *              source: '/path/to/js',
- *              entry_points: '/path/to/main.js'
- *          },
- *          css: '/path/to/css'
+ *      js: {
+ *          webpack_config_path: './webpack.config.js',
  *      },
- *      dist: {
- *          js: './dist/js',
- *          css: './dist/css'
+ *      scss: {
+ *         src: './scss/style.scss',
+ *         dist: './dist/css/style.css',
  *      }
- *  });
+ * });
+ * // Or using default webpack configuration
+ * require("@magonxesp/gulpfilejs") ({
+ *      js: {
+ *          src: 'js/index.js',
+ *          dist: {
+ *              dirname: 'dist/js',
+ *              filename: 'bundle.js'
+ *          },
+ *          mode: 'development'
+ *      },
+ *      scss: {
+ *         src: './scss/style.scss',
+ *         dist: './dist/css/style.css',
+ *      }
+ * });
  */
 function buildTasks(paths) {
     build_paths = paths;
 
-    task('default', build);
-    task('buildjs', buildjs);
-    task('buildcss', buildcss);
-    task('watch', buildWatch);
+    if (typeof build_paths.js !== 'undefined') {
+        gulp.task('js', js);
+        available_tasks.push(js);
+    }
+
+    if (typeof build_paths.scss !== 'undefined') {
+        gulp.task('scss', scss);
+        available_tasks.push(scss);
+    }
+
+    gulp.task('watch', buildWatch);
+    gulp.task('default', gulp.series(...available_tasks));
 }
 
 module.exports = buildTasks;

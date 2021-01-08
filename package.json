@@ -22,6 +22,7 @@
     "@babel/preset-env": "^7.10.4",
     "@babel/register": "^7.10.4",
     "babel-cli": "^6.26.0",
+    "babel-loader": "^8.2.2",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
@@ -29,10 +30,13 @@
     "gulp-rollup": "^2.17.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.2",
-    "rollup-plugin-babel": "^4.4.0",
-    "rollup-stream": "^1.24.1",
+    "sass": "^1.32.2",
+    "sass-loader": "^10.1.0",
+    "source-map-loader": "^2.0.0",
     "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
+    "vinyl-source-stream": "^2.0.0",
+    "webpack": "^5.12.1",
+    "webpack-cli": "^4.3.1"
   },
   "devDependencies": {}
 }

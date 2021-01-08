@@ -1,8 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const packageBabelrc = path.join(__dirname, '.babelrc');
-const rootDirectory = process.env.INIT_CWD || path.resolve("../../", __dirname);
-const destBabelrc = path.join(rootDirectory, '.babelrc');
+const packageFiles = [
+    '.babelrc',
+    'webpack.config.js'
+];
 
-fs.copyFileSync(packageBabelrc, destBabelrc);
+for (let file of packageFiles) {
+    const packageBabelrc = path.join(__dirname, file);
+    const rootDirectory = process.env.INIT_CWD || path.resolve("../../", __dirname);
+    const destBabelrc = path.join(rootDirectory, file);
+
+    fs.copyFileSync(packageBabelrc, destBabelrc);
+}
