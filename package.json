@@ -3,7 +3,7 @@
   "description": "Compile javascript ES6 and SASS using Gulp",
   "author": "magonxesp",
   "license": "MIT",
-  "version": "0.0.18",
+  "version": "1.0.0",
   "main": "./index.js",
   "scripts": {
     "postinstall": "node postinstall.js"
