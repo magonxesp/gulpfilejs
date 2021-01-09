@@ -3,6 +3,8 @@ const gulp = require('gulp');
 const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
 const webpack = require('webpack');
+const sass = require('gulp-sass');
+const _clean = require('gulp-clean');
 
 let build_paths = {
     js: {
@@ -16,49 +18,57 @@ let build_paths = {
     },
     scss: {
         src: './scss/style.scss',
-        dist: './dist/css/style.css',
+        dist: './dist/css',
     }
 };
 
 let available_tasks = [];
 
+function clean() {
+    let paths = [];
+
+    for (let type in build_paths) {
+        if (typeof build_paths[type].dist !== 'undefined') {
+            if (typeof build_paths[type].dist === 'object' && build_paths[type].dist.dirname) {
+                paths.push(build_paths[type].dist.dirname);
+            } else {
+                paths.push(build_paths[type].dist);
+            }
+        }
+
+    }
+
+    return gulp.src(paths, {read: false})
+        .pipe(_clean());
+}
+
 function scss() {
     return gulp.src(build_paths.scss.src)
         .pipe(sourcemaps.init())
-        .pipe(plumber());
+        .pipe(plumber())
+        .pipe(sass())
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest(build_paths.scss.dist));
 }
 
 function defaultWebpackConfig() {
-    return {
-        mode: build_paths.js.mode,
-        entry: path.resolve(__dirname, build_paths.js.src),
-        output: {
-            path: path.resolve(__dirname, build_paths.js.dist.dirname),
-            filename: build_paths.js.dist.filename
-        },
-        devtool: 'source-map',
-        module: {
-            rules: [
-                {
-                    test: /\.js$/,
-                    exclude: /node_modules/,
-                    use: ['babel-loader']
-                },
-                {
-                    test: /\.js$/,
-                    use: ['source-map-loader'],
-                    enforce: 'pre'
-                },
-            ]
-        }
+    let config = require(path.join(__dirname, 'webpack.config.js'));
+
+    config.mode = build_paths.js.mode;
+    config.entry = path.resolve(build_paths.js.src);
+    config.output = {
+        path: path.resolve(build_paths.js.dist.dirname),
+        filename: build_paths.js.dist.filename
     };
+
+    return config;
 }
 
 function compileWebpackJs() {
     let config = {};
 
     if (typeof build_paths.js.webpack_config_path !== 'undefined') {
-        config = require(build_paths.js.webpack_config_path);
+        config = require(path.resolve(build_paths.js.webpack_config_path));
     } else {
         config = defaultWebpackConfig();
     }
@@ -69,7 +79,7 @@ function compileWebpackJs() {
                 reject(error);
             }
 
-            if (status.hasErrors()) {
+            if (status && status.hasErrors()) {
                 reject(status);
             }
 
@@ -149,7 +159,8 @@ function buildTasks(paths) {
         available_tasks.push(scss);
     }
 
-    gulp.task('watch', buildWatch);
+    gulp.task('clean', clean);
+    // gulp.task('watch', buildWatch);
     gulp.task('default', gulp.series(...available_tasks));
 }
 

@@ -284,5 +284,6 @@ modules.xml
 !/postinstall.js
 !/webpack.config.js
 !/README.md
+!/gulpfile.js
 
 # End of https://www.toptal.com/developers/gitignore/api/phpstorm+all

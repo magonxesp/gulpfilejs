@@ -20,6 +20,14 @@ module.exports = {
                 use: ['source-map-loader'],
                 enforce: 'pre'
             },
+            {
+                test: /\.s[ac]ss$/i,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'sass-loader',
+                ],
+            },
         ]
     }
 };
