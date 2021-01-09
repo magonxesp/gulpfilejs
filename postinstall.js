@@ -3,7 +3,8 @@ const path = require('path');
 
 const packageFiles = [
     '.babelrc',
-    'webpack.config.js'
+    'webpack.config.js',
+    'gulpfile.js'
 ];
 
 for (let file of packageFiles) {
